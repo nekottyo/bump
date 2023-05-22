@@ -11,8 +11,7 @@ import (
 	"os/exec"
 	"strings"
 
-	"github.com/Masterminds/semver"
-	"github.com/haya14busa/go-versionsort"
+	"github.com/Masterminds/semver/v3"
 )
 
 type Level int
@@ -81,13 +80,17 @@ func tags(ctx context.Context) ([]string, error) {
 }
 
 func latestSemVer(tags []string) string {
-	latest := ""
+	latest := &semver.Version{}
 	for _, tag := range tags {
-		if versionsort.Less(latest, tag) {
-			latest = tag
+		v, err := semver.NewVersion(tag)
+		if err != nil {
+			continue
+		}
+		if latest.LessThan(v) {
+			latest = v
 		}
 	}
-	return latest
+	return latest.String()
 }
 
 func nextSemVer(v *semver.Version, level Level) semver.Version {
